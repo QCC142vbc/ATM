@@ -18,6 +18,11 @@ class UserRepository:
                 raise DataCorruptionError(
                     f"Invalid user record in file: {self.storage.file_path}."
                 ) from exc
+            user_ids = [user.user_id for user in users]
+            if len(user_ids) != len(set(user_ids)):
+                raise DataCorruptionError(
+                    f"Duplicate user IDs in file: {self.storage.file_path}."
+                )
             has_legacy_transactions = any(
                 not transaction_data.get("transaction_id")
                 for user_data in data

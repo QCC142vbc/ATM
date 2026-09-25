@@ -5,11 +5,12 @@ from application.auth_service import AuthService
 from application.atm_service import ATMService
 from application.transaction_service import TransactionService
 
+from backend.infrastructure.paths import USERS_FILE
 from presentation.cli import CLI
 
 
 def main() -> None:
-    storage = JSONStorage("data/users.json")
+    storage = JSONStorage(USERS_FILE)
     user_repository = UserRepository(storage)
 
     auth_service = AuthService(user_repository)

@@ -41,20 +41,18 @@ MiniATM/
 │   ├── application/        # Web application services
 │   ├── domain/             # Web domain models and rules
 │   ├── infrastructure/     # JSON repositories and ATM cash storage
+│   ├── data/               # Canonical users.json and ATM inventory
 │   └── tests/               # Web/API test suite
 │
 ├── frontend/               # React/Vite dashboard and ATM mode
 │
-├── application/           # Application layer
+├── application/           # CLI-compatible imports of backend services
 │   ├── __init__.py
 │   ├── atm_service.py     # ATM operations (deposit, withdraw, balance)
 │   ├── auth_service.py    # User authentication
 │   └── transaction_service.py  # Transaction management
 │
-├── data/                  # Data storage
-│   └── users.json         # User data (persisted)
-│
-├── domain/                # Domain layer
+├── domain/                # CLI-compatible imports of backend domain models
 │   ├── __init__.py
 │   ├── account.py         # Account model and business logic
 │   ├── exceptions.py      # Custom domain exceptions
@@ -62,7 +60,7 @@ MiniATM/
 │   ├── user.py            # User model
 │   └── validators.py      # Input validation functions
 │
-├── infrastructure/        # Infrastructure layer
+├── infrastructure/        # CLI-compatible imports of backend persistence
 │   ├── __init__.py
 │   ├── json_storage.py    # JSON file storage
 │   └── repositories.py    # Data repositories
@@ -146,7 +144,7 @@ Tunnel hostnames and bind to all interfaces for that development server.
 MiniATM v2 includes transfers, searchable transaction details, profile/PIN
 settings, account statuses, server-enforced limits, activity analytics, an ATM
 mode, and a persisted banknote inventory. The backend remains authoritative for
-all account operations. User/account data is stored in `backend/data/users.json`;
+all account operations. User/account data is stored exclusively in `backend/data/users.json`;
 the simulated cash inventory is stored in `backend/data/atm_cash.json`.
 Profiles include the account status, balance, transaction count, and configured
 operation limits. Transaction history supports type/date/amount filters,
@@ -168,8 +166,8 @@ Transaction limits are configurable through these environment variables:
 ```
 Welcome to MiniATM!
 === Login ===
-User ID: user001
-PIN: 1234
+User ID: <user ID from backend/data/users.json>
+PIN: <matching PIN from backend/data/users.json>
 Login successful.
 === MiniATM ===
 1. Check balance
@@ -207,24 +205,15 @@ python -m pytest tests/test_atm_service.py
 
 ## Test Data
 
-The application includes a test user for demonstration purposes:
+The application loads its user accounts from `backend/data/users.json`. That
+file is the single canonical dataset for both the web application and CLI. It
+currently contains 500 users with unique IDs and records for balances, PINs, statuses,
+and transaction history. Use the credentials already present in that local
+dataset; this README intentionally does not duplicate or publish PINs.
 
-- **User ID**: `user001`
-- **PIN**: `1234`
-- **Name**: Test User
-
-Additional active demo accounts are available for testing transfers and
-different account balances:
-
-| User ID | PIN | Name | Starting balance | Example situation |
-| --- | --- | --- | ---: | --- |
-| `user002` | `2345` | Alex Morgan | €42.75 | Low balance after recurring bills |
-| `user003` | `3456` | Jordan Lee | €1,850.00 | Regular income and expenses |
-| `user004` | `4567` | Casey Patel | €12,500.00 | Higher-balance savings account |
-| `user005` | `5678` | Sam Rivera | €135.50 | Student/part-time income |
-
-These are fictional demo accounts; all are active and can send/receive
-transfers. PINs are for local demonstrations only.
+The project root `data/users.json` sample has been removed. The root-level CLI
+modules now re-export the backend models, services, repository, and JSON storage
+so the CLI and web app use the same schema and persistence implementation.
 
 **Note**: This is educational/demo data. In a production environment, PINs should never be stored in plaintext.
 

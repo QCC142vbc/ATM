@@ -1,14 +1,17 @@
-class ATMError(Exception):
-    """Base exception for Mini ATM errors."""
+from backend.domain.exceptions import (
+    ATMError,
+    AccountUnavailableError,
+    DataCorruptionError,
+    InsufficientFundsError,
+    InvalidAmountError,
+    TransactionLimitError,
+)
 
-
-class InvalidAmountError(ATMError):
-    """Raised when a transaction amount is invalid."""
-
-
-class InsufficientFundsError(ATMError):
-    """Raised when an account does not have enough money."""
-
-
-class DataCorruptionError(ATMError):
-    """Raised when stored data is corrupted or unreadable."""
+__all__ = [
+    "ATMError",
+    "AccountUnavailableError",
+    "DataCorruptionError",
+    "InsufficientFundsError",
+    "InvalidAmountError",
+    "TransactionLimitError",
+]

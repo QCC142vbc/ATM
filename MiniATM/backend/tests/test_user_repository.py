@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 import pytest
@@ -170,4 +171,19 @@ def test_invalid_user_record_is_reported_as_data_corruption(tmp_path):
     path.write_text('[{"user_id": "user001"}]', encoding="utf-8")
 
     with pytest.raises(DataCorruptionError, match="Invalid user record"):
+        UserRepository(JSONStorage(str(path))).get_all()
+
+
+def test_duplicate_user_ids_are_reported_as_data_corruption(tmp_path):
+    path = tmp_path / "users.json"
+    duplicate = {
+        "user_id": "user001",
+        "name": "Duplicate",
+        "pin": "1234",
+        "account": {"balance": "0", "status": "ACTIVE"},
+        "transactions": [],
+    }
+    path.write_text(json.dumps([duplicate, duplicate]), encoding="utf-8")
+
+    with pytest.raises(DataCorruptionError, match="Duplicate user IDs"):
         UserRepository(JSONStorage(str(path))).get_all()

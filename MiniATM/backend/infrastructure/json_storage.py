@@ -7,7 +7,7 @@ from backend.domain.exceptions import DataCorruptionError
 
 
 class JSONStorage:
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str | Path):
         self.file_path = Path(file_path)
 
     def load_users(self) -> list[dict]:
