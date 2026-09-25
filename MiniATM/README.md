@@ -98,6 +98,48 @@ Start the ATM application:
 python main.py
 ```
 
+### Running MiniATM v2 (Web Application)
+
+Start the API from the `MiniATM` project directory in one terminal:
+
+```powershell
+python -m uvicorn backend.api.app:app --host 127.0.0.1 --port 8000
+```
+
+Start the React development server from `MiniATM\frontend` in another terminal:
+
+```powershell
+npm install
+npm run dev
+```
+
+The browser uses same-origin `/api` URLs. Vite forwards those requests to the local
+FastAPI server, so the API address is not exposed in the frontend bundle. For a
+Cloudflare Quick Tunnel demo, keep both servers running and start:
+
+```powershell
+cloudflared tunnel --url http://localhost:5173
+```
+
+Open the generated `trycloudflare.com` URL. Vite is configured to accept Quick
+Tunnel hostnames and bind to all interfaces for that development server.
+
+MiniATM v2 includes transfers, searchable transaction details, profile/PIN
+settings, account statuses, server-enforced limits, activity analytics, an ATM
+mode, and a persisted banknote inventory. The backend remains authoritative for
+all account operations. User/account data is stored in `backend/data/users.json`;
+the simulated cash inventory is stored in `backend/data/atm_cash.json`.
+
+Transaction limits are configurable through these environment variables:
+
+| Variable | Default |
+| --- | ---: |
+| `MINIATM_MAX_WITHDRAWAL` | `1000` |
+| `MINIATM_DAILY_WITHDRAWAL` | `1000` |
+| `MINIATM_MAX_TRANSFER` | `1000` |
+| `MINIATM_DAILY_TRANSFER` | `3000` |
+| `MINIATM_MAX_DEPOSIT` | `5000` |
+
 ### Example Session
 
 ```
@@ -160,9 +202,11 @@ This is an educational ATM simulation project. It is **not suitable for real fin
 - No encryption for sensitive data
 - No real banking integration
 - No card processing
-- No network security
+- The web application and Quick Tunnel are for local demos only, not production banking
 - No audit logging beyond transaction history
-- No rate limiting on authentication (beyond the 3-attempt CLI retry)
+- Login attempts and sessions are held in process memory and are not shared across workers
+- Transfer persistence is atomic for a single process/JSON file; this is not a multi-process banking ledger
+- Simulated ATM cash and account balances are stored in separate JSON files, so a machine crash between writes is not a transactional database commit
 
 ### Transaction Rules
 
@@ -203,13 +247,13 @@ The project follows these principles:
 
 ### Testing
 
-The project currently has **66 passing tests** covering:
+Tests cover:
 
 - Domain models (Account, Transaction, User)
 - Application services (AuthService, ATMService, TransactionService)
 - Infrastructure (JSONStorage, UserRepository)
 - Input validation (validators)
-- Custom exceptions
+- Transfers, transaction limits, PIN changes, account status, ATM banknote selection, and authenticated API flows
 
 ## Contributing
 

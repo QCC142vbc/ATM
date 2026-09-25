@@ -16,10 +16,16 @@ transaction_service = TransactionService(user_repository)
 
 
 class TransactionResponse(BaseModel):
+    transaction_id: str
     transaction_type: str
     amount: str
     balance_after: str
     timestamp: str
+    user_id: str | None = None
+    counterparty_id: str | None = None
+    counterparty_name: str | None = None
+    description: str | None = None
+    status: str
 
 
 @router.get("", response_model=list[TransactionResponse])
@@ -31,10 +37,16 @@ def get_transactions(session_id: str = Cookie(None)):
 
         return [
             TransactionResponse(
+                transaction_id=t.transaction_id,
                 transaction_type=t.transaction_type,
                 amount=str(t.amount),
                 balance_after=str(t.balance_after),
                 timestamp=t.timestamp.isoformat(),
+                user_id=t.user_id or user_id,
+                counterparty_id=t.counterparty_id,
+                counterparty_name=t.counterparty_name,
+                description=t.description,
+                status=t.status,
             )
             for t in transactions
         ]
@@ -44,7 +56,7 @@ def get_transactions(session_id: str = Cookie(None)):
         raise HTTPException(status_code=404, detail={
             "error": {"code": "USER_NOT_FOUND", "message": str(exc)}
         })
-    except (DataCorruptionError, Exception):
+    except DataCorruptionError:
         raise HTTPException(status_code=500, detail={
             "error": {"code": "INTERNAL_ERROR", "message": "Failed to retrieve transactions"}
         })

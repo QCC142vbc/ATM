@@ -42,4 +42,14 @@ export const api = {
   getTransactions: () => request('/transactions'),
   deposit: (amount) => request('/account/deposit', { method: 'POST', body: { amount: String(amount) } }),
   withdraw: (amount) => request('/account/withdraw', { method: 'POST', body: { amount: String(amount) } }),
-};
+  transfer: ({ recipientId, amount, description }) => request('/transfers', {
+    method: 'POST',
+    body: { recipient_id: recipientId, amount: String(amount), description },
+  }),
+  changePin: ({ currentPin, newPin, confirmPin }) => request('/auth/change-pin', {
+    method: 'POST',
+    body: { current_pin: currentPin, new_pin: newPin, confirm_pin: confirmPin },
+  }),
+  getAtmCash: () => request('/atm/cash'),
+  atmWithdraw: (amount) => request('/atm/withdraw', { method: 'POST', body: { amount: String(amount) } }),
+}

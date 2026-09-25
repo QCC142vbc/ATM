@@ -12,3 +12,11 @@ class InsufficientFundsError(ATMError):
 
 class DataCorruptionError(ATMError):
     """Raised when stored data is corrupted or unreadable."""
+
+
+class AccountUnavailableError(ATMError):
+    """Raised when an account is not active."""
+
+
+class TransactionLimitError(ATMError):
+    """Raised when an operation exceeds configured transaction limits."""

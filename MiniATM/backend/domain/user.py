@@ -1,4 +1,5 @@
 from decimal import Decimal
+import re
 
 from .account import Account
 from .transaction import Transaction
@@ -22,6 +23,15 @@ class User:
     def verify_pin(self, pin: str) -> bool:
         return self._pin == pin
 
+    def change_pin(self, current_pin: str, new_pin: str) -> None:
+        if not self.verify_pin(current_pin):
+            raise ValueError("Current PIN is incorrect.")
+        if not re.fullmatch(r"\d{4,12}", new_pin):
+            raise ValueError("New PIN must contain 4 to 12 digits.")
+        if self.verify_pin(new_pin):
+            raise ValueError("New PIN must be different from the current PIN.")
+        self._pin = new_pin
+
     def add_transaction(self, transaction: Transaction) -> None:
         self.transactions.append(transaction)
 
@@ -32,6 +42,7 @@ class User:
             "pin": self._pin,
             "account": {
                 "balance": str(self.account.balance),
+                "status": self.account.status,
             },
             "transactions": [
                 transaction.to_dict()
@@ -44,7 +55,8 @@ class User:
         account_data = data.get("account", {})
 
         account = Account(
-            Decimal(account_data.get("balance", "0.00"))
+            Decimal(account_data.get("balance", "0.00")),
+            account_data.get("status", Account.ACTIVE),
         )
 
         transactions = [

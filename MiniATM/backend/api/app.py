@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api import account_routes, auth_routes, transaction_routes
+from backend.api import (
+    account_routes,
+    atm_routes,
+    auth_routes,
+    transaction_routes,
+    transfer_routes,
+)
 
 
 def create_app() -> FastAPI:
@@ -26,6 +32,12 @@ def create_app() -> FastAPI:
         prefix="/api/transactions",
         tags=["Transactions"],
     )
+    app.include_router(
+        transfer_routes.router,
+        prefix="/api/transfers",
+        tags=["Transfers"],
+    )
+    app.include_router(atm_routes.router, prefix="/api/atm", tags=["ATM"])
 
     return app
 

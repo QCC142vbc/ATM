@@ -1,17 +1,25 @@
 from backend.domain.user import User
+from threading import RLock
 
 
 class UserRepository:
+    transaction_lock = RLock()
+
     def __init__(self, storage):
         self.storage = storage
 
     def get_all(self) -> list[User]:
-        data = self.storage.load_users()
-
-        return [
-            User.from_dict(user_data)
-            for user_data in data
-        ]
+        with self.transaction_lock:
+            data = self.storage.load_users()
+            users = [User.from_dict(user_data) for user_data in data]
+            has_legacy_transactions = any(
+                not transaction_data.get("transaction_id")
+                for user_data in data
+                for transaction_data in user_data.get("transactions", [])
+            )
+            if has_legacy_transactions:
+                self._save_all(users)
+            return users
 
     def get_by_id(self, user_id: str) -> User | None:
         users = self.get_all()
@@ -23,16 +31,25 @@ class UserRepository:
         return None
 
     def save(self, user: User) -> None:
-        users = self.get_all()
+        self.save_many([user])
 
-        for index, existing_user in enumerate(users):
-            if existing_user.user_id == user.user_id:
-                users[index] = user
-                self._save_all(users)
-                return
+    def save_many(self, changed_users: list[User]) -> None:
+        with self.transaction_lock:
+            users = self.get_all()
+            changed_by_id = {user.user_id: user for user in changed_users}
+            persisted_ids = set()
 
-        users.append(user)
-        self._save_all(users)
+            for index, existing_user in enumerate(users):
+                if existing_user.user_id in changed_by_id:
+                    users[index] = changed_by_id[existing_user.user_id]
+                    persisted_ids.add(existing_user.user_id)
+
+            users.extend(
+                user
+                for user in changed_users
+                if user.user_id not in persisted_ids
+            )
+            self._save_all(users)
 
     def _save_all(self, users: list[User]) -> None:
         data = [

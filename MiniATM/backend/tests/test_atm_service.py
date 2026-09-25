@@ -4,7 +4,12 @@ import pytest
 
 from backend.application.atm_service import ATMService
 from backend.application.transaction_service import TransactionService
-from backend.domain.exceptions import InsufficientFundsError, InvalidAmountError
+from backend.application.transaction_limits import TransactionLimits
+from backend.domain.exceptions import (
+    InsufficientFundsError,
+    InvalidAmountError,
+    TransactionLimitError,
+)
 from backend.domain.transaction import Transaction
 from backend.domain.user import User
 
@@ -110,6 +115,33 @@ def test_successful_withdrawal(tmp_path):
     assert user.account.balance == Decimal("700.00")
     assert len(user.transactions) == 1
     assert user.transactions[0].transaction_type == "withdrawal"
+
+
+def test_withdrawal_of_exact_balance_is_allowed(tmp_path):
+    user = User("user001", "Test User", "1234")
+    user.account.deposit(Decimal("100"))
+    repository = FakeUserRepository(user)
+    atm_service = ATMService(repository, TransactionService(repository))
+
+    balance = atm_service.withdraw("user001", Decimal("100"))
+
+    assert balance == Decimal("0.00")
+    assert len(user.transactions) == 1
+
+
+def test_withdrawal_daily_limit_exact_boundary_and_overage(tmp_path):
+    user = User("user001", "Test User", "1234")
+    user.account.deposit(Decimal("300"))
+    repository = FakeUserRepository(user)
+    limits = TransactionLimits(
+        max_withdrawal=Decimal("100"),
+        daily_withdrawal=Decimal("100"),
+    )
+    atm_service = ATMService(repository, TransactionService(repository), limits)
+
+    assert atm_service.withdraw("user001", Decimal("100")) == Decimal("200")
+    with pytest.raises(TransactionLimitError):
+        atm_service.withdraw("user001", Decimal("11"))
 
 
 def test_withdrawal_insufficient_funds(tmp_path):

@@ -13,11 +13,14 @@ class TransactionService:
         user: User,
         amount: Decimal,
         balance_after: Decimal,
+        description: str | None = None,
     ) -> Transaction:
         transaction = Transaction(
             transaction_type="deposit",
             amount=amount,
             balance_after=balance_after,
+            user_id=user.user_id,
+            description=description,
         )
 
         user.add_transaction(transaction)
@@ -28,11 +31,14 @@ class TransactionService:
         user: User,
         amount: Decimal,
         balance_after: Decimal,
+        description: str | None = None,
     ) -> Transaction:
         transaction = Transaction(
             transaction_type="withdrawal",
             amount=amount,
             balance_after=balance_after,
+            user_id=user.user_id,
+            description=description,
         )
 
         user.add_transaction(transaction)
