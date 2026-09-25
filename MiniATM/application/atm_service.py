@@ -20,13 +20,13 @@ class ATMService:
 
         balance_after = user.account.get_balance()
 
-        self.user_repository.save(user)
-
         self.transaction_service.record_deposit(
-            user_id,
+            user,
             amount,
             balance_after,
         )
+
+        self.user_repository.save(user)
 
         return balance_after
 
@@ -37,13 +37,13 @@ class ATMService:
 
         balance_after = user.account.get_balance()
 
-        self.user_repository.save(user)
-
         self.transaction_service.record_withdrawal(
-            user_id,
+            user,
             amount,
             balance_after,
         )
+
+        self.user_repository.save(user)
 
         return balance_after
 

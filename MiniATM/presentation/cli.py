@@ -3,6 +3,7 @@ from decimal import Decimal, InvalidOperation
 from application.atm_service import ATMService
 from application.auth_service import AuthService
 from application.transaction_service import TransactionService
+from domain.exceptions import ATMError
 
 from presentation.menus import show_login_menu, show_main_menu
 
@@ -30,14 +31,22 @@ class CLI:
     def _login(self) -> bool:
         user_id, pin = show_login_menu()
 
-        try:
-            self.current_user = self.auth_service.login(user_id, pin)
-            print("Login successful.")
-            return True
+        for attempt in range(3):
+            try:
+                self.current_user = self.auth_service.login(user_id, pin)
+                print("Login successful.")
+                return True
 
-        except ValueError as error:
-            print(f"Login failed: {error}")
-            return False
+            except ValueError as error:
+                if attempt < 2:
+                    print(f"Login failed: {error}")
+                    pin = input("PIN: ").strip()
+                else:
+                    print(f"Login failed: {error}")
+                    print("Maximum login attempts exceeded.")
+                    return False
+
+        return False
 
     def _main_loop(self) -> None:
         while self.current_user is not None:
@@ -69,7 +78,7 @@ class CLI:
 
             print(f"Current balance: {balance}")
 
-        except ValueError as error:
+        except ATMError as error:
             print(f"Error: {error}")
 
     def _deposit(self) -> None:
@@ -87,7 +96,7 @@ class CLI:
             print(f"Deposit successful.")
             print(f"New balance: {balance}")
 
-        except ValueError as error:
+        except ATMError as error:
             print(f"Error: {error}")
 
     def _withdraw(self) -> None:
@@ -105,7 +114,7 @@ class CLI:
             print("Withdrawal successful.")
             print(f"New balance: {balance}")
 
-        except ValueError as error:
+        except ATMError as error:
             print(f"Error: {error}")
 
     def _show_transactions(self) -> None:
@@ -128,7 +137,7 @@ class CLI:
                     f"Balance: {transaction.balance_after}"
                 )
 
-        except ValueError as error:
+        except ATMError as error:
             print(f"Error: {error}")
 
     def _read_amount(self, prompt: str) -> Decimal | None:

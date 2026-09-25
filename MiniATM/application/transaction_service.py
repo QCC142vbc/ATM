@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from domain.transaction import Transaction
+from domain.user import User
 
 
 class TransactionService:
@@ -9,12 +10,10 @@ class TransactionService:
 
     def record_deposit(
         self,
-        user_id: str,
+        user: User,
         amount: Decimal,
         balance_after: Decimal,
     ) -> Transaction:
-        user = self._get_user(user_id)
-
         transaction = Transaction(
             transaction_type="deposit",
             amount=amount,
@@ -22,18 +21,14 @@ class TransactionService:
         )
 
         user.add_transaction(transaction)
-        self.user_repository.save(user)
-
         return transaction
 
     def record_withdrawal(
         self,
-        user_id: str,
+        user: User,
         amount: Decimal,
         balance_after: Decimal,
     ) -> Transaction:
-        user = self._get_user(user_id)
-
         transaction = Transaction(
             transaction_type="withdrawal",
             amount=amount,
@@ -41,8 +36,6 @@ class TransactionService:
         )
 
         user.add_transaction(transaction)
-        self.user_repository.save(user)
-
         return transaction
 
     def get_transactions(self, user_id: str) -> list[Transaction]:

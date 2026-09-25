@@ -25,7 +25,7 @@ def test_record_deposit():
     service = TransactionService(repository)
 
     transaction = service.record_deposit(
-        "user001",
+        user,
         Decimal("500.00"),
         Decimal("1500.00"),
     )
@@ -45,7 +45,7 @@ def test_record_withdrawal():
     service = TransactionService(repository)
 
     transaction = service.record_withdrawal(
-        "user001",
+        user,
         Decimal("200.00"),
         Decimal("800.00"),
     )
@@ -64,13 +64,13 @@ def test_get_transactions():
     service = TransactionService(repository)
 
     service.record_deposit(
-        "user001",
+        user,
         Decimal("500.00"),
         Decimal("1500.00"),
     )
 
     service.record_withdrawal(
-        "user001",
+        user,
         Decimal("200.00"),
         Decimal("1300.00"),
     )

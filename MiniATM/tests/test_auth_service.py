@@ -41,7 +41,7 @@ def test_login_with_wrong_pin():
 
     auth_service = AuthService(repository)
 
-    with pytest.raises(ValueError, match="Maximum login attempts exceeded"):
+    with pytest.raises(ValueError, match="Invalid PIN"):
         auth_service.login("user001", "9999")
 
 
