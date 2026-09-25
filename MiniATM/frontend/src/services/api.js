@@ -22,9 +22,11 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
       errorPayload = { error: { message: 'Request failed' } };
     }
 
-    const message = errorPayload?.error?.message || errorPayload?.detail || 'Request failed';
+    const detail = errorPayload?.detail;
+    const extractedError = typeof detail === 'object' && detail !== null ? detail.error ?? detail : errorPayload?.error ?? {};
+    const message = extractedError.message || detail?.message || errorPayload?.message || 'Request failed';
     const error = new Error(message);
-    error.payload = errorPayload;
+    error.payload = extractedError && Object.keys(extractedError).length ? { error: extractedError } : errorPayload;
     throw error;
   }
 
