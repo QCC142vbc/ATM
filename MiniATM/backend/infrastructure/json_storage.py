@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from domain.exceptions import DataCorruptionError
+from backend.domain.exceptions import DataCorruptionError
 
 
 class JSONStorage:

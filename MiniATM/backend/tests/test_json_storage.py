@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from domain.exceptions import DataCorruptionError
-from infrastructure.json_storage import JSONStorage
+from backend.domain.exceptions import DataCorruptionError
+from backend.infrastructure.json_storage import JSONStorage
 
 
 def test_load_existing_file(tmp_path):

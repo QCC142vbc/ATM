@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from application.atm_service import ATMService
 from application.auth_service import AuthService
 from application.transaction_service import TransactionService
-from domain.exceptions import ATMError
+from domain.exceptions import ATMError, DataCorruptionError
 
 from presentation.menus import show_login_menu, show_main_menu
 
@@ -78,7 +78,7 @@ class CLI:
 
             print(f"Current balance: {balance}")
 
-        except ATMError as error:
+        except (ATMError, DataCorruptionError) as error:
             print(f"Error: {error}")
 
     def _deposit(self) -> None:
@@ -96,7 +96,7 @@ class CLI:
             print(f"Deposit successful.")
             print(f"New balance: {balance}")
 
-        except ATMError as error:
+        except (ATMError, DataCorruptionError) as error:
             print(f"Error: {error}")
 
     def _withdraw(self) -> None:
@@ -114,7 +114,7 @@ class CLI:
             print("Withdrawal successful.")
             print(f"New balance: {balance}")
 
-        except ATMError as error:
+        except (ATMError, DataCorruptionError) as error:
             print(f"Error: {error}")
 
     def _show_transactions(self) -> None:
@@ -137,7 +137,7 @@ class CLI:
                     f"Balance: {transaction.balance_after}"
                 )
 
-        except ATMError as error:
+        except (ATMError, DataCorruptionError) as error:
             print(f"Error: {error}")
 
     def _read_amount(self, prompt: str) -> Decimal | None:

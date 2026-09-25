@@ -164,6 +164,13 @@ This is an educational ATM simulation project. It is **not suitable for real fin
 - No audit logging beyond transaction history
 - No rate limiting on authentication (beyond the 3-attempt CLI retry)
 
+### Transaction Rules
+
+- **Minimum transaction amount**: 10.00 (deposits and withdrawals must be greater than 10)
+- Transactions with amounts ≤ 10 will be rejected
+- Withdrawals cannot exceed available balance
+- All monetary calculations use Decimal for precision
+
 ### Security Recommendations for Future Development
 
 - Implement PIN hashing (e.g., bcrypt, Argon2)
