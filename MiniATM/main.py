@@ -24,6 +24,7 @@ def main() -> None:
     cli = CLI(
         auth_service=auth_service,
         atm_service=atm_service,
+        transaction_service=transaction_service,
     )
 
     cli.run()
