@@ -23,6 +23,11 @@ class JSONStorage:
                 f"Error: {error.msg}"
             )
 
+        if not isinstance(data, list) or any(not isinstance(user, dict) for user in data):
+            raise DataCorruptionError(
+                f"Invalid data structure in file: {self.file_path}."
+            )
+
         return data
 
     def save_users(self, users: list[dict]) -> None:

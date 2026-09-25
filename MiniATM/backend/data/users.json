@@ -4,26 +4,45 @@
         "name": "Test User",
         "pin": "1234",
         "account": {
-            "balance": "1257.00"
+            "balance": "1257.00",
+            "status": "ACTIVE"
         },
         "transactions": [
             {
+                "transaction_id": "f5e57289-d1ca-48da-951e-56c9d64eb91b",
                 "transaction_type": "deposit",
                 "amount": "400",
                 "balance_after": "1400.00",
-                "timestamp": "2026-09-25T21:17:10.814902"
+                "timestamp": "2026-09-25T21:17:10.814902",
+                "user_id": null,
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "status": "completed"
             },
             {
+                "transaction_id": "82ddbd3b-55ef-47b8-bd64-9e62d027e0a7",
                 "transaction_type": "withdrawal",
                 "amount": "343",
                 "balance_after": "1057.00",
-                "timestamp": "2026-09-25T21:17:24.784801"
+                "timestamp": "2026-09-25T21:17:24.784801",
+                "user_id": null,
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "status": "completed"
             },
             {
+                "transaction_id": "90e761b6-9478-4dd3-9824-e14aae64cebb",
                 "transaction_type": "deposit",
                 "amount": "200",
                 "balance_after": "1257.00",
-                "timestamp": "2026-09-25T22:12:47.883173"
+                "timestamp": "2026-09-25T22:12:47.883173",
+                "user_id": null,
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "status": "completed"
             }
         ]
     }

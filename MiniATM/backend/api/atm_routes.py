@@ -17,11 +17,12 @@ from backend.domain.exceptions import (
     TransactionLimitError,
 )
 from backend.infrastructure.atm_cash_storage import ATMCashStorage
+from backend.infrastructure.paths import ATM_CASH_FILE
 
 router = APIRouter()
 atm_withdrawal_service = ATMWithdrawalService(
     atm_service,
-    ATMCashStorage("backend/data/atm_cash.json"),
+    ATMCashStorage(ATM_CASH_FILE),
 )
 
 

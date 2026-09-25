@@ -1,4 +1,5 @@
 from backend.domain.user import User
+from backend.domain.exceptions import DataCorruptionError
 from threading import RLock
 
 
@@ -11,7 +12,12 @@ class UserRepository:
     def get_all(self) -> list[User]:
         with self.transaction_lock:
             data = self.storage.load_users()
-            users = [User.from_dict(user_data) for user_data in data]
+            try:
+                users = [User.from_dict(user_data) for user_data in data]
+            except (KeyError, TypeError, ValueError, ArithmeticError) as exc:
+                raise DataCorruptionError(
+                    f"Invalid user record in file: {self.storage.file_path}."
+                ) from exc
             has_legacy_transactions = any(
                 not transaction_data.get("transaction_id")
                 for user_data in data

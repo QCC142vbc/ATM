@@ -5,6 +5,7 @@ import pytest
 from backend.domain.user import User
 from backend.infrastructure.json_storage import JSONStorage
 from backend.infrastructure.repositories import UserRepository
+from backend.domain.exceptions import DataCorruptionError
 
 
 def test_get_all_users(tmp_path):
@@ -162,3 +163,11 @@ def test_multiple_users_with_different_ids(tmp_path):
     assert repository.get_by_id("user003") is not None
     
     assert len(repository.get_all()) == 3
+
+
+def test_invalid_user_record_is_reported_as_data_corruption(tmp_path):
+    path = tmp_path / "users.json"
+    path.write_text('[{"user_id": "user001"}]', encoding="utf-8")
+
+    with pytest.raises(DataCorruptionError, match="Invalid user record"):
+        UserRepository(JSONStorage(str(path))).get_all()

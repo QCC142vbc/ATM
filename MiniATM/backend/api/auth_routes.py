@@ -1,22 +1,18 @@
-from pathlib import Path
-import sys
-
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from pydantic import BaseModel
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.application.auth_service import AuthService
 from backend.domain.account import Account
 from backend.domain.exceptions import AccountUnavailableError, DataCorruptionError
 from backend.infrastructure.json_storage import JSONStorage
+from backend.infrastructure.paths import USERS_FILE
 from backend.infrastructure.repositories import UserRepository
 from backend.api.session import login_attempt_tracker, session_manager
 
 
 router = APIRouter()
 
-storage = JSONStorage("backend/data/users.json")
+storage = JSONStorage(USERS_FILE)
 user_repository = UserRepository(storage)
 auth_service = AuthService(user_repository)
 

@@ -114,3 +114,12 @@ def test_load_malformed_json(tmp_path):
     
     with pytest.raises(DataCorruptionError, match="Corrupted data file"):
         storage.load_users()
+
+
+@pytest.mark.parametrize("content", ["{}", "[1, 2]", '{"user_id": "user001"}'])
+def test_load_invalid_data_structure(tmp_path, content):
+    file_path = tmp_path / "users.json"
+    file_path.write_text(content, encoding="utf-8")
+
+    with pytest.raises(DataCorruptionError, match="Invalid data structure"):
+        JSONStorage(str(file_path)).load_users()

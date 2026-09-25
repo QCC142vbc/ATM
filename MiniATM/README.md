@@ -1,6 +1,7 @@
 # MiniATM
 
-A modular terminal-based ATM simulation written in Python.
+A modular ATM and banking simulation with a Python/FastAPI backend and React/Vite
+frontend. The original CLI remains available for local terminal use.
 
 ## Features
 
@@ -16,17 +17,15 @@ A modular terminal-based ATM simulation written in Python.
 
 ## Architecture
 
-The project follows a layered architecture:
+The project has two entrypoints over layered implementations:
 
-```
-Presentation (CLI, menus)
-    ↓
-Application (Services)
-    ↓
-Domain (Models)
-    ↓
-Infrastructure (Storage)
-```
+- `backend/` powers the web application. FastAPI routes call application
+  services, which use domain models and infrastructure repositories.
+- The root `application/`, `domain/`, `infrastructure/`, and `presentation/`
+  packages power the preserved CLI entrypoint in `main.py`.
+
+The implementations are intentionally separate so the web API can evolve
+without breaking the existing terminal application.
 
 ### Directory Structure
 
@@ -36,6 +35,15 @@ MiniATM/
 ├── requirements.txt        # Python dependencies
 ├── .gitignore             # Git ignore patterns
 ├── README.md              # This file
+│
+├── backend/                # FastAPI web application and backend tests
+│   ├── api/                # HTTP routes and sessions
+│   ├── application/        # Web application services
+│   ├── domain/             # Web domain models and rules
+│   ├── infrastructure/     # JSON repositories and ATM cash storage
+│   └── tests/               # Web/API test suite
+│
+├── frontend/               # React/Vite dashboard and ATM mode
 │
 ├── application/           # Application layer
 │   ├── __init__.py
@@ -84,14 +92,25 @@ git clone https://github.com/QCC142vbc/MiniATM.git
 cd MiniATM
 ```
 
-2. Install dependencies:
+2. Install CLI dependencies:
 ```bash
 python -m pip install -r requirements.txt
 ```
 
+3. Install backend dependencies:
+```bash
+python -m pip install -r backend/requirements.txt
+```
+
+4. Install frontend dependencies:
+```powershell
+Set-Location frontend
+npm install
+```
+
 ## Usage
 
-### Running the Application
+### Running the CLI Application
 
 Start the ATM application:
 ```bash

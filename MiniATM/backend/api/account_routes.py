@@ -13,13 +13,14 @@ from backend.domain.exceptions import (
     TransactionLimitError,
 )
 from backend.infrastructure.json_storage import JSONStorage
+from backend.infrastructure.paths import USERS_FILE
 from backend.infrastructure.repositories import UserRepository
 from backend.api.auth_routes import get_current_user
 
 
 router = APIRouter()
 
-storage = JSONStorage("backend/data/users.json")
+storage = JSONStorage(USERS_FILE)
 user_repository = UserRepository(storage)
 transaction_service = TransactionService(user_repository)
 limits = TransactionLimits.from_environment()

@@ -14,10 +14,11 @@ from backend.domain.exceptions import (
     TransactionLimitError,
 )
 from backend.infrastructure.json_storage import JSONStorage
+from backend.infrastructure.paths import USERS_FILE
 from backend.infrastructure.repositories import UserRepository
 
 router = APIRouter()
-user_repository = UserRepository(JSONStorage("backend/data/users.json"))
+user_repository = UserRepository(JSONStorage(USERS_FILE))
 transfer_service = TransferService(user_repository, TransactionLimits.from_environment())
 
 
