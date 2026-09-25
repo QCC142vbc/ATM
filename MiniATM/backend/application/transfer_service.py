@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from threading import RLock
+from uuid import uuid4
 
 from backend.application.transaction_limits import TransactionLimits
 from backend.domain.account import Account
@@ -59,6 +60,7 @@ class TransferService:
 
         sender.account.withdraw(amount)
         recipient.account.deposit(amount)
+        transfer_id = str(uuid4())
         sent = Transaction(
             "transfer_sent",
             amount,
@@ -67,6 +69,7 @@ class TransferService:
             counterparty_id=recipient.user_id,
             counterparty_name=recipient.name,
             description=description,
+            transfer_id=transfer_id,
         )
         received = Transaction(
             "transfer_received",
@@ -76,6 +79,7 @@ class TransferService:
             counterparty_id=sender.user_id,
             counterparty_name=sender.name,
             description=description,
+            transfer_id=transfer_id,
         )
         sender.add_transaction(sent)
         recipient.add_transaction(received)

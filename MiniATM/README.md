@@ -148,6 +148,10 @@ settings, account statuses, server-enforced limits, activity analytics, an ATM
 mode, and a persisted banknote inventory. The backend remains authoritative for
 all account operations. User/account data is stored in `backend/data/users.json`;
 the simulated cash inventory is stored in `backend/data/atm_cash.json`.
+Profiles include the account status, balance, transaction count, and configured
+operation limits. Transaction history supports type/date/amount filters,
+searching, and date sorting. Both sides of a transfer share a transfer ID while
+retaining distinct transaction IDs.
 
 Transaction limits are configurable through these environment variables:
 
@@ -209,6 +213,19 @@ The application includes a test user for demonstration purposes:
 - **PIN**: `1234`
 - **Name**: Test User
 
+Additional active demo accounts are available for testing transfers and
+different account balances:
+
+| User ID | PIN | Name | Starting balance | Example situation |
+| --- | --- | --- | ---: | --- |
+| `user002` | `2345` | Alex Morgan | €42.75 | Low balance after recurring bills |
+| `user003` | `3456` | Jordan Lee | €1,850.00 | Regular income and expenses |
+| `user004` | `4567` | Casey Patel | €12,500.00 | Higher-balance savings account |
+| `user005` | `5678` | Sam Rivera | €135.50 | Student/part-time income |
+
+These are fictional demo accounts; all are active and can send/receive
+transfers. PINs are for local demonstrations only.
+
 **Note**: This is educational/demo data. In a production environment, PINs should never be stored in plaintext.
 
 ## Limitations & Security Notes
@@ -224,6 +241,7 @@ This is an educational ATM simulation project. It is **not suitable for real fin
 - The web application and Quick Tunnel are for local demos only, not production banking
 - No audit logging beyond transaction history
 - Login attempts and sessions are held in process memory and are not shared across workers
+- Account creation dates are not part of the current account data model
 - Transfer persistence is atomic for a single process/JSON file; this is not a multi-process banking ledger
 - Simulated ATM cash and account balances are stored in separate JSON files, so a machine crash between writes is not a transactional database commit
 

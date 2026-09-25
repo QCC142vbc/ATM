@@ -15,6 +15,7 @@ class Transaction:
         counterparty_id: str | None = None,
         counterparty_name: str | None = None,
         description: str | None = None,
+        transfer_id: str | None = None,
         status: str = "completed",
     ):
         if transaction_type not in {
@@ -34,6 +35,7 @@ class Transaction:
         self.counterparty_id = counterparty_id
         self.counterparty_name = counterparty_name
         self.description = description
+        self.transfer_id = transfer_id
         self.status = status
 
     def to_dict(self) -> dict:
@@ -47,6 +49,7 @@ class Transaction:
             "counterparty_id": self.counterparty_id,
             "counterparty_name": self.counterparty_name,
             "description": self.description,
+            "transfer_id": self.transfer_id,
             "status": self.status,
         }
 
@@ -62,5 +65,6 @@ class Transaction:
             counterparty_id=data.get("counterparty_id"),
             counterparty_name=data.get("counterparty_name"),
             description=data.get("description"),
+            transfer_id=data.get("transfer_id"),
             status=data.get("status", "completed"),
         )

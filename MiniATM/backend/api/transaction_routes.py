@@ -26,6 +26,7 @@ class TransactionResponse(BaseModel):
     counterparty_id: str | None = None
     counterparty_name: str | None = None
     description: str | None = None
+    transfer_id: str | None = None
     status: str
 
 
@@ -47,6 +48,7 @@ def get_transactions(session_id: str = Cookie(None)):
                 counterparty_id=t.counterparty_id,
                 counterparty_name=t.counterparty_name,
                 description=t.description,
+                transfer_id=t.transfer_id,
                 status=t.status,
             )
             for t in transactions

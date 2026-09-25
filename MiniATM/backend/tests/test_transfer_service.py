@@ -38,6 +38,8 @@ def test_successful_transfer_creates_both_records_and_persists(tmp_path):
     assert sent.transaction_type == "transfer_sent"
     assert received.transaction_type == "transfer_received"
     assert sent.transaction_id != received.transaction_id
+    assert sent.transfer_id
+    assert sent.transfer_id == received.transfer_id
     assert sent.counterparty_id == "user002"
     assert received.counterparty_id == "user001"
     assert sent.description == received.description == "Rent"
@@ -48,6 +50,7 @@ def test_successful_transfer_creates_both_records_and_persists(tmp_path):
     assert persisted_receiver.account.balance == Decimal("150")
     assert persisted_sender.transactions[0].transaction_id == sent.transaction_id
     assert persisted_receiver.transactions[0].transaction_id == received.transaction_id
+    assert persisted_sender.transactions[0].transfer_id == persisted_receiver.transactions[0].transfer_id
 
 
 @pytest.mark.parametrize("amount", ["0", "-1", "10", "NaN", "Infinity"])

@@ -63,6 +63,8 @@ def test_api_requires_session_and_returns_non_sensitive_account_data(tmp_path, m
     assert response.status_code == 200
     assert response.json()["user_id"] == "user001"
     assert response.json()["status"] == Account.ACTIVE
+    assert response.json()["transaction_count"] == 0
+    assert response.json()["limits"]["max_withdrawal"] == "1000"
     assert "pin" not in response.text.lower()
 
 
@@ -83,6 +85,11 @@ def test_transfer_api_creates_sender_and_receiver_history(tmp_path, monkeypatch)
     assert history[0]["transaction_id"]
     assert history[0]["counterparty_id"] == "user002"
     assert history[0]["description"] == "Utilities"
+    assert history[0]["transfer_id"]
+    recipient = repository.get_by_id("user002")
+    assert recipient is not None
+    recipient_history = recipient.transactions
+    assert recipient_history[0].transfer_id == history[0]["transfer_id"]
 
 
 def test_transfer_api_reports_validation_errors_without_changing_balances(tmp_path, monkeypatch):
@@ -104,6 +111,50 @@ def test_transfer_api_reports_validation_errors_without_changing_balances(tmp_pa
     assert insufficient.json()["detail"]["error"]["code"] == "INSUFFICIENT_FUNDS"
     assert repository.get_by_id("user001").account.balance == Decimal("500.00")
     assert repository.get_by_id("user002").account.balance == Decimal("0.00")
+
+
+def test_transfer_api_requires_authentication(tmp_path, monkeypatch):
+    client, _ = make_client(tmp_path, monkeypatch)
+
+    response = client.post(
+        "/api/transfers",
+        json={"recipient_id": "user002", "amount": "120"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_authenticated_basic_banking_flow_updates_profile_and_history(tmp_path, monkeypatch):
+    client, repository = make_client(tmp_path, monkeypatch)
+    login(client)
+
+    deposit = client.post("/api/account/deposit", json={"amount": "50"})
+    withdrawal = client.post("/api/account/withdraw", json={"amount": "20"})
+    transfer = client.post(
+        "/api/transfers",
+        json={"recipient_id": "user002", "amount": "100", "description": "Shared costs"},
+    )
+
+    assert deposit.status_code == 200
+    assert withdrawal.status_code == 200
+    assert transfer.status_code == 200
+    assert transfer.json()["balance"] == "430.00"
+
+    profile = client.get("/api/account").json()
+    history = client.get("/api/transactions").json()
+    assert len(history) == 3
+    receiver = repository.get_by_id("user002")
+    assert receiver is not None
+
+    assert profile["balance"] == "430.00"
+    assert profile["transaction_count"] == 3
+    assert [transaction["transaction_type"] for transaction in history] == [
+        "deposit",
+        "withdrawal",
+        "transfer_sent",
+    ]
+    assert history[-1]["transfer_id"] == receiver.transactions[0].transfer_id
+    assert receiver.account.balance == Decimal("100.00")
 
 
 def test_account_endpoints_do_not_allow_user_id_impersonation(tmp_path, monkeypatch):

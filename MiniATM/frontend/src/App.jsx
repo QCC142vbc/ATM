@@ -139,6 +139,7 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileHistoryFilter, setMobileHistoryFilter] = useState('all')
   const [transactionSearch, setTransactionSearch] = useState('')
+  const [historySort, setHistorySort] = useState('newest')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [amountFrom, setAmountFrom] = useState('')
@@ -156,6 +157,20 @@ function App() {
     toastTimeout.current = window.setTimeout(() => setToast(null), 4200)
   }, [])
 
+  const handleSessionFailure = useCallback((failure) => {
+    if (!['UNAUTHORIZED', 'SESSION_EXPIRED', 'ACCOUNT_UNAVAILABLE'].includes(errorCode(failure))) {
+      return false
+    }
+    setUser(null)
+    setAccount(null)
+    setTransactions([])
+    setTransactionModal(null)
+    setAtmMode(false)
+    setError('Your session has expired. Please sign in again.')
+    showToast('Your session has expired. Please sign in again.', 'error')
+    return true
+  }, [showToast])
+
   const loadDashboard = useCallback(async () => {
     try {
       const [accountData, transactionsData] = await Promise.all([
@@ -166,16 +181,12 @@ function App() {
       setTransactions(transactionsData)
       return true
     } catch (loadError) {
-      if (['UNAUTHORIZED', 'SESSION_EXPIRED', 'ACCOUNT_UNAVAILABLE'].includes(errorCode(loadError))) {
-        setUser(null)
-        setAccount(null)
-        setTransactions([])
-      } else {
+      if (!handleSessionFailure(loadError)) {
         showToast(loadError.message || 'Unable to load account data.', 'error')
       }
       return false
     }
-  }, [showToast])
+  }, [handleSessionFailure, showToast])
 
   useEffect(() => {
     let mounted = true
@@ -186,9 +197,7 @@ function App() {
         setUser({ user_id: session.user_id, name: session.name })
         await loadDashboard()
       } catch (bootstrapError) {
-        if (mounted && errorCode(bootstrapError) === 'ACCOUNT_UNAVAILABLE') {
-          setError(bootstrapError.message)
-        }
+        if (mounted) handleSessionFailure(bootstrapError)
       } finally {
         if (mounted) setPageLoading(false)
       }
@@ -198,14 +207,18 @@ function App() {
       mounted = false
       if (toastTimeout.current) window.clearTimeout(toastTimeout.current)
     }
-  }, [loadDashboard])
+  }, [handleSessionFailure, loadDashboard])
 
   useEffect(() => {
     if (!atmMode || !user) return
     api.getAtmCash()
       .then(setAtmCash)
-      .catch((cashError) => setAtmCashError(cashError.message || 'ATM cash inventory is unavailable.'))
-  }, [atmMode, user])
+      .catch((cashError) => {
+        if (!handleSessionFailure(cashError)) {
+          setAtmCashError(cashError.message || 'ATM cash inventory is unavailable.')
+        }
+      })
+  }, [atmMode, handleSessionFailure, user])
 
   const totals = useMemo(() => getTransactionTotals(transactions), [transactions])
   const monthlyActivity = useMemo(() => getMonthlyActivity(transactions), [transactions])
@@ -221,7 +234,16 @@ function App() {
       if (mobileHistoryFilter === 'deposit' && type !== 'deposit') return false
       if (mobileHistoryFilter === 'withdrawal' && type !== 'withdrawal') return false
       if (mobileHistoryFilter === 'transfer' && !type.startsWith('transfer_')) return false
-      if (query && !transaction.transaction_id?.toLowerCase().includes(query)) return false
+      const searchableText = [
+        transaction.transaction_id,
+        transaction.transfer_id,
+        transaction.description,
+        transaction.counterparty_id,
+        transaction.counterparty_name,
+        transaction.transaction_type,
+        transaction.amount,
+      ].filter(Boolean).join(' ').toLowerCase()
+      if (query && !searchableText.includes(query)) return false
       const date = new Date(transaction.timestamp)
       if (dateFrom && date < new Date(`${dateFrom}T00:00:00`)) return false
       if (dateTo && date > new Date(`${dateTo}T23:59:59.999`)) return false
@@ -229,8 +251,11 @@ function App() {
       if (amountFrom !== '' && amount < Number(amountFrom)) return false
       if (amountTo !== '' && amount > Number(amountTo)) return false
       return true
+    }).sort((left, right) => {
+      const dateDifference = new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()
+      return historySort === 'oldest' ? dateDifference : -dateDifference
     })
-  }, [transactions, mobileHistoryFilter, transactionSearch, dateFrom, dateTo, amountFrom, amountTo])
+  }, [transactions, mobileHistoryFilter, transactionSearch, dateFrom, dateTo, amountFrom, amountTo, historySort])
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -336,8 +361,10 @@ function App() {
         showToast(`Withdrawal of ${formatCurrency(amount)} completed.`)
       }
     } catch (transactionError) {
-      setTransactionFeedback(transactionError.message || 'Transaction failed.')
-      showToast(transactionError.message || 'Transaction failed.', 'error')
+      if (!handleSessionFailure(transactionError)) {
+        setTransactionFeedback(transactionError.message || 'Transaction failed.')
+        showToast(transactionError.message || 'Transaction failed.', 'error')
+      }
     } finally {
       setTransactionLoading(false)
     }
@@ -374,8 +401,10 @@ function App() {
       setTransferStage('success')
       showToast(`Transfer of ${formatCurrency(transferDraft.amount)} completed.`)
     } catch (transferFailure) {
-      setTransferError(transferFailure.message || 'Transfer failed.')
-      showToast(transferFailure.message || 'Transfer failed.', 'error')
+      if (!handleSessionFailure(transferFailure)) {
+        setTransferError(transferFailure.message || 'Transfer failed.')
+        showToast(transferFailure.message || 'Transfer failed.', 'error')
+      }
     } finally {
       setTransactionLoading(false)
     }
@@ -395,7 +424,9 @@ function App() {
       form.reset()
       showToast('Your PIN was changed successfully.')
     } catch (pinError) {
-      showToast(pinError.message || 'Could not change your PIN.', 'error')
+      if (!handleSessionFailure(pinError)) {
+        showToast(pinError.message || 'Could not change your PIN.', 'error')
+      }
     } finally {
       setLoading(false)
     }
@@ -462,7 +493,9 @@ function App() {
     )
   }
 
-  const recentTransactions = transactions.slice(0, 4)
+  const recentTransactions = [...transactions]
+    .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime())
+    .slice(0, 4)
 
   return (
     <div className={`app-shell ${atmMode ? 'atm-app-shell' : ''}`}>
@@ -595,7 +628,8 @@ function App() {
                     ))}
                   </div>
                   <div className="history-filters">
-                    <label className="search-control"><Search size={17} /><input value={transactionSearch} onChange={(event) => setTransactionSearch(event.target.value)} placeholder="Search transaction ID" /></label>
+                    <label className="search-control"><Search size={17} /><input value={transactionSearch} onChange={(event) => setTransactionSearch(event.target.value)} placeholder="Search ID, person, description, amount" /></label>
+                    <label><span>Sort by date</span><select value={historySort} onChange={(event) => setHistorySort(event.target.value)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
                     <label><span>From</span><input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} /></label>
                     <label><span>To</span><input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} /></label>
                     <label><span>Min amount</span><input type="number" min="0" step="0.01" value={amountFrom} onChange={(event) => setAmountFrom(event.target.value)} placeholder="€0" /></label>
@@ -659,7 +693,10 @@ function App() {
                   <div className="detail-row"><span>User ID</span><strong>{account?.user_id || user.user_id}</strong></div>
                   <div className="detail-row"><span>Account status</span><strong className="secure-pill"><ShieldCheck size={14} />{account?.status || 'ACTIVE'}</strong></div>
                   <div className="detail-row"><span>Current balance</span><strong>{showBalance ? formatCurrency(account?.balance) : '••••••'}</strong></div>
+                  <div className="detail-row"><span>Total transactions</span><strong>{account?.transaction_count ?? transactions.length}</strong></div>
+                  <div className="detail-row"><span>Max withdrawal per transaction</span><strong>{formatCurrency(account?.limits?.max_withdrawal)}</strong></div>
                   <div className="detail-row"><span>Daily withdrawal limit</span><strong>{formatCurrency(account?.limits?.withdrawal_limit)}</strong></div>
+                  <div className="detail-row"><span>Max transfer per transaction</span><strong>{formatCurrency(account?.limits?.max_transfer)}</strong></div>
                   <div className="detail-row"><span>Daily transfer limit</span><strong>{formatCurrency(account?.limits?.transfer_limit)}</strong></div>
                 </div>
                 <div className="account-details-card pin-card">
@@ -750,6 +787,7 @@ function App() {
             <div className="modal-header"><div><p className="eyebrow primary">Ledger record</p><h3 id="details-title">{formatTransactionType(selectedTransaction.transaction_type)}</h3></div><button className="close-button" aria-label="Close details" onClick={() => setSelectedTransaction(null)}><X size={18} /></button></div>
             <div className="detail-amount">{isCredit(selectedTransaction) ? '+' : '-'}{formatCurrency(selectedTransaction.amount)}</div>
             <div className="detail-row"><span>Transaction ID</span><strong className="mono-value">{selectedTransaction.transaction_id}</strong></div>
+            {selectedTransaction.transfer_id && <div className="detail-row"><span>Transfer ID</span><strong className="mono-value">{selectedTransaction.transfer_id}</strong></div>}
             <div className="detail-row"><span>Date & time</span><strong>{new Date(selectedTransaction.timestamp).toLocaleString()}</strong></div>
             <div className="detail-row"><span>Balance after</span><strong>{formatCurrency(selectedTransaction.balance_after)}</strong></div>
             <div className="detail-row"><span>Status</span><strong>{selectedTransaction.status || 'completed'}</strong></div>

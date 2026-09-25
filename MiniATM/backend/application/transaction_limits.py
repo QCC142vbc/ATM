@@ -84,6 +84,9 @@ class TransactionLimits:
         return {
             "withdrawal_used": str(self.daily_total(transactions, {"withdrawal"})),
             "withdrawal_limit": str(self.daily_withdrawal),
+            "max_withdrawal": str(self.max_withdrawal),
             "transfer_used": str(self.daily_total(transactions, {"transfer_sent"})),
             "transfer_limit": str(self.daily_transfer),
+            "max_transfer": str(self.max_transfer),
+            "max_deposit": str(self.max_deposit),
         }

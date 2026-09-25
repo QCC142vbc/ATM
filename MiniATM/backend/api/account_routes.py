@@ -32,6 +32,7 @@ class AccountResponse(BaseModel):
     name: str
     balance: str
     status: str
+    transaction_count: int
     limits: dict[str, str]
 
 

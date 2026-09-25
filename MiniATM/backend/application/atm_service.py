@@ -69,6 +69,7 @@ class ATMService:
             "name": user.name,
             "balance": str(user.account.balance),
             "status": user.account.status,
+            "transaction_count": len(user.transactions),
             "limits": self.limits.usage(user.transactions),
         }
 

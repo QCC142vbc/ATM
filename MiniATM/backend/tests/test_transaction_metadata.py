@@ -25,6 +25,7 @@ def test_transaction_serialization_roundtrip():
         counterparty_id="user002",
         counterparty_name="Recipient",
         description="Shared bill",
+        transfer_id="transfer-123",
     )
 
     restored = Transaction.from_dict(transaction.to_dict())
@@ -36,6 +37,7 @@ def test_transaction_serialization_roundtrip():
     assert restored.counterparty_id == "user002"
     assert restored.counterparty_name == "Recipient"
     assert restored.description == "Shared bill"
+    assert restored.transfer_id == "transfer-123"
     assert restored.status == "completed"
 
 

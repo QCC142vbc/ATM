@@ -4,7 +4,7 @@
         "name": "Test User",
         "pin": "1234",
         "account": {
-            "balance": "1257.00",
+            "balance": "1457.00",
             "status": "ACTIVE"
         },
         "transactions": [
@@ -18,6 +18,7 @@
                 "counterparty_id": null,
                 "counterparty_name": null,
                 "description": null,
+                "transfer_id": null,
                 "status": "completed"
             },
             {
@@ -30,6 +31,7 @@
                 "counterparty_id": null,
                 "counterparty_name": null,
                 "description": null,
+                "transfer_id": null,
                 "status": "completed"
             },
             {
@@ -42,8 +44,209 @@
                 "counterparty_id": null,
                 "counterparty_name": null,
                 "description": null,
+                "transfer_id": null,
+                "status": "completed"
+            },
+            {
+                "transaction_id": "122bf4dd-38b5-4c53-9dc0-5f62ae8864ea",
+                "transaction_type": "deposit",
+                "amount": "200",
+                "balance_after": "1457.00",
+                "timestamp": "2026-09-25T22:40:53.385988",
+                "user_id": "user001",
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "transfer_id": null,
+                "status": "completed"
+            },
+            {
+                "transaction_id": "19cd771f-56cb-43f8-890b-79d550377d92",
+                "transaction_type": "deposit",
+                "amount": "20",
+                "balance_after": "1477.00",
+                "timestamp": "2026-09-25T22:45:41.767925",
+                "user_id": "user001",
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "transfer_id": null,
+                "status": "completed"
+            },
+            {
+                "transaction_id": "581e1401-ebbb-45f9-964d-1aadfa1e7b0c",
+                "transaction_type": "withdrawal",
+                "amount": "20",
+                "balance_after": "1457.00",
+                "timestamp": "2026-09-25T22:45:44.661730",
+                "user_id": "user001",
+                "counterparty_id": null,
+                "counterparty_name": null,
+                "description": null,
+                "transfer_id": null,
                 "status": "completed"
             }
         ]
-    }
+    },
+    {
+        "user_id": "user002",
+                "name": "Alex Morgan",
+                "pin": "2345",
+                "account": {
+                    "balance": "42.75",
+                    "status": "ACTIVE"
+                },
+                "transactions": [
+                    {
+                        "transaction_id": "1a81b812-2579-4cea-8a01-a3f083609002",
+                        "transaction_type": "deposit",
+                        "amount": "420.00",
+                        "balance_after": "420.00",
+                        "timestamp": "2026-09-18T09:15:00",
+                        "user_id": "user002",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Monthly income",
+                        "transfer_id": null,
+                        "status": "completed"
+                    },
+                    {
+                        "transaction_id": "2b92c923-368a-4dfb-9b12-b1f194720003",
+                        "transaction_type": "withdrawal",
+                        "amount": "120.00",
+                        "balance_after": "300.00",
+                        "timestamp": "2026-09-20T16:42:00",
+                        "user_id": "user002",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Bills and groceries",
+                        "transfer_id": null,
+                        "status": "completed"
+                    },
+                    {
+                        "transaction_id": "3ca3da34-479b-4e0c-ac23-c2a2a5831004",
+                        "transaction_type": "withdrawal",
+                        "amount": "257.25",
+                        "balance_after": "42.75",
+                        "timestamp": "2026-09-24T11:20:00",
+                        "user_id": "user002",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Rent and utilities",
+                        "transfer_id": null,
+                        "status": "completed"
+                    }
+                ]
+            },
+            {
+                "user_id": "user003",
+                "name": "Jordan Lee",
+                "pin": "3456",
+                "account": {
+                    "balance": "1850.00",
+                    "status": "ACTIVE"
+                },
+                "transactions": [
+                    {
+                        "transaction_id": "4db4eb45-58ac-4f1d-bd34-d3b3b6942005",
+                        "transaction_type": "deposit",
+                        "amount": "2500.00",
+                        "balance_after": "2500.00",
+                        "timestamp": "2026-09-15T08:30:00",
+                        "user_id": "user003",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Salary",
+                        "transfer_id": null,
+                        "status": "completed"
+                    },
+                    {
+                        "transaction_id": "5ec5fc56-69bd-4022-8e45-e4c4c7a53006",
+                        "transaction_type": "withdrawal",
+                        "amount": "650.00",
+                        "balance_after": "1850.00",
+                        "timestamp": "2026-09-22T13:05:00",
+                        "user_id": "user003",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Monthly expenses",
+                        "transfer_id": null,
+                        "status": "completed"
+                    }
+                ]
+            },
+            {
+                "user_id": "user004",
+                "name": "Casey Patel",
+                "pin": "4567",
+                "account": {
+                    "balance": "12500.00",
+                    "status": "ACTIVE"
+                },
+                "transactions": [
+                    {
+                        "transaction_id": "6fd60d67-7ace-4133-9f56-f5d5d8c64007",
+                        "transaction_type": "deposit",
+                        "amount": "15000.00",
+                        "balance_after": "15000.00",
+                        "timestamp": "2026-09-10T10:00:00",
+                        "user_id": "user004",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Savings transfer",
+                        "transfer_id": null,
+                        "status": "completed"
+                    },
+                    {
+                        "transaction_id": "7ae71e78-8bdf-4244-a067-06e6e9d75008",
+                        "transaction_type": "withdrawal",
+                        "amount": "2500.00",
+                        "balance_after": "12500.00",
+                        "timestamp": "2026-09-21T14:10:00",
+                        "user_id": "user004",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Home improvement",
+                        "transfer_id": null,
+                        "status": "completed"
+                    }
+                ]
+            },
+            {
+                "user_id": "user005",
+                "name": "Sam Rivera",
+                "pin": "5678",
+                "account": {
+                    "balance": "135.50",
+                    "status": "ACTIVE"
+                },
+                "transactions": [
+                    {
+                        "transaction_id": "8bf82f89-9ce0-4355-b178-17f7f0ea6009",
+                        "transaction_type": "deposit",
+                        "amount": "500.00",
+                        "balance_after": "500.00",
+                        "timestamp": "2026-09-16T12:00:00",
+                        "user_id": "user005",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Part-time wages",
+                        "transfer_id": null,
+                        "status": "completed"
+                    },
+                    {
+                        "transaction_id": "9c09309a-adf1-4466-86c9-2808010fb010",
+                        "transaction_type": "withdrawal",
+                        "amount": "364.50",
+                        "balance_after": "135.50",
+                        "timestamp": "2026-09-23T17:25:00",
+                        "user_id": "user005",
+                        "counterparty_id": null,
+                        "counterparty_name": null,
+                        "description": "Tuition and transport",
+                        "transfer_id": null,
+                        "status": "completed"
+                    }
+                ]
+            }
 ]
