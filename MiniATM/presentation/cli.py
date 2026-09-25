@@ -1,5 +1,8 @@
+from decimal import Decimal, InvalidOperation
+
 from application.atm_service import ATMService
 from application.auth_service import AuthService
+from application.transaction_service import TransactionService
 
 from presentation.menus import show_login_menu, show_main_menu
 
@@ -9,9 +12,11 @@ class CLI:
         self,
         auth_service: AuthService,
         atm_service: ATMService,
+        transaction_service: TransactionService,
     ):
         self.auth_service = auth_service
         self.atm_service = atm_service
+        self.transaction_service = transaction_service
         self.current_user = None
 
     def run(self) -> None:
@@ -57,20 +62,86 @@ class CLI:
                 print("Invalid option.")
 
     def _show_balance(self) -> None:
-        balance = self.atm_service.get_balance(
-            self.current_user.user_id
-        )
+        try:
+            balance = self.atm_service.get_balance(
+                self.current_user.user_id
+            )
 
-        print(f"Current balance: {balance}")
+            print(f"Current balance: {balance}")
+
+        except ValueError as error:
+            print(f"Error: {error}")
 
     def _deposit(self) -> None:
-        print("Deposit functionality will be connected here.")
+        amount = self._read_amount("Deposit amount: ")
+
+        if amount is None:
+            return
+
+        try:
+            balance = self.atm_service.deposit(
+                self.current_user.user_id,
+                amount,
+            )
+
+            print(f"Deposit successful.")
+            print(f"New balance: {balance}")
+
+        except ValueError as error:
+            print(f"Error: {error}")
 
     def _withdraw(self) -> None:
-        print("Withdrawal functionality will be connected here.")
+        amount = self._read_amount("Withdrawal amount: ")
+
+        if amount is None:
+            return
+
+        try:
+            balance = self.atm_service.withdraw(
+                self.current_user.user_id,
+                amount,
+            )
+
+            print("Withdrawal successful.")
+            print(f"New balance: {balance}")
+
+        except ValueError as error:
+            print(f"Error: {error}")
 
     def _show_transactions(self) -> None:
-        print("Transaction history will be connected here.")
+        try:
+            transactions = self.transaction_service.get_transactions(
+                self.current_user.user_id
+            )
+
+            if not transactions:
+                print("No transactions found.")
+                return
+
+            print("\n=== Transaction History ===")
+
+            for transaction in transactions:
+                print(
+                    f"{transaction.timestamp} | "
+                    f"{transaction.transaction_type} | "
+                    f"{transaction.amount} | "
+                    f"Balance: {transaction.balance_after}"
+                )
+
+        except ValueError as error:
+            print(f"Error: {error}")
+
+    def _read_amount(self, prompt: str) -> Decimal | None:
+        value = input(prompt).strip()
+
+        try:
+            amount = Decimal(value)
+
+        except InvalidOperation:
+            print("Invalid amount.")
+            return None
+
+        return amount
 
     def _logout(self) -> None:
         self.current_user = None
