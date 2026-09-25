@@ -12,15 +12,15 @@ class Account:
     def deposit(self, amount: Decimal) -> None:
         amount = Decimal(amount)
         if amount <= 10:
-            raise ValueError("Deposit amount must be greater than 10")
+            raise InvalidAmountError("Deposit amount must be greater than 10")
         self._balance += amount
 
     def withdraw(self, amount: Decimal) -> None:
         amount = Decimal(amount)
         if amount <= 10:
-            raise ValueError("Withdrawal amount must be greater than 10")
+            raise InvalidAmountError("Withdrawal amount must be greater than 10")
         if amount > self._balance:
-            raise ValueError("Insufficient funds")
+            raise InsufficientFundsError("Insufficient funds")
         self._balance -= amount
 
     def get_balance(self) -> Decimal:
