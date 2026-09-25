@@ -1,18 +1,18 @@
 from decimal import Decimal
-from fastapi import APIRouter, HTTPException, Cookie
+
+from fastapi import APIRouter, Cookie, HTTPException
 from pydantic import BaseModel
 
 from backend.application.atm_service import ATMService
 from backend.application.transaction_service import TransactionService
+from backend.domain.exceptions import ATMError, DataCorruptionError
 from backend.infrastructure.json_storage import JSONStorage
 from backend.infrastructure.repositories import UserRepository
-from backend.domain.exceptions import ATMError, DataCorruptionError
-from api.auth_routes import get_current_user
+from backend.api.auth_routes import get_current_user
 
 
 router = APIRouter()
 
-# Initialize services
 storage = JSONStorage("backend/data/users.json")
 user_repository = UserRepository(storage)
 transaction_service = TransactionService(user_repository)
@@ -39,29 +39,22 @@ def get_account(session_id: str = Cookie(None)):
     try:
         user_id = get_current_user(session_id)
         user = user_repository.get_by_id(user_id)
-        
+
         if not user:
             raise HTTPException(status_code=404, detail={
-                "error": {
-                    "code": "USER_NOT_FOUND",
-                    "message": "User account not found"
-                }
+                "error": {"code": "USER_NOT_FOUND", "message": "User account not found"}
             })
-        
+
         return AccountResponse(
             user_id=user.user_id,
             name=user.name,
-            balance=str(user.account.balance)
+            balance=str(user.account.balance),
         )
-        
     except HTTPException:
         raise
-    except (DataCorruptionError, Exception) as e:
+    except (DataCorruptionError, Exception):
         raise HTTPException(status_code=500, detail={
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "Failed to retrieve account information"
-            }
+            "error": {"code": "INTERNAL_ERROR", "message": "Failed to retrieve account information"}
         })
 
 
@@ -71,24 +64,16 @@ def get_balance(session_id: str = Cookie(None)):
     try:
         user_id = get_current_user(session_id)
         balance = atm_service.get_balance(user_id)
-        
         return {"balance": str(balance)}
-        
     except HTTPException:
         raise
-    except ValueError as e:
+    except ValueError as exc:
         raise HTTPException(status_code=404, detail={
-            "error": {
-                "code": "USER_NOT_FOUND",
-                "message": str(e)
-            }
+            "error": {"code": "USER_NOT_FOUND", "message": str(exc)}
         })
-    except (DataCorruptionError, Exception) as e:
+    except (DataCorruptionError, Exception):
         raise HTTPException(status_code=500, detail={
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "Failed to retrieve balance"
-            }
+            "error": {"code": "INTERNAL_ERROR", "message": "Failed to retrieve balance"}
         })
 
 
@@ -97,44 +82,22 @@ def deposit(request: TransactionRequest, session_id: str = Cookie(None)):
     """Deposit money into account."""
     try:
         user_id = get_current_user(session_id)
-        
-        # Convert amount string to Decimal
-        try:
-            amount = Decimal(request.amount)
-        except Exception:
-            raise HTTPException(status_code=400, detail={
-                "error": {
-                    "code": "INVALID_AMOUNT",
-                    "message": "Invalid amount format"
-                }
-            })
-        
+        amount = Decimal(request.amount)
         balance = atm_service.deposit(user_id, amount)
-        
         return TransactionResponse(balance=str(balance))
-        
     except HTTPException:
         raise
-    except ATMError as e:
+    except ATMError as exc:
         raise HTTPException(status_code=400, detail={
-            "error": {
-                "code": "INVALID_AMOUNT",
-                "message": str(e)
-            }
+            "error": {"code": "INVALID_AMOUNT", "message": str(exc)}
         })
-    except ValueError as e:
+    except ValueError as exc:
         raise HTTPException(status_code=404, detail={
-            "error": {
-                "code": "USER_NOT_FOUND",
-                "message": str(e)
-            }
+            "error": {"code": "USER_NOT_FOUND", "message": str(exc)}
         })
-    except (DataCorruptionError, Exception) as e:
+    except (DataCorruptionError, Exception):
         raise HTTPException(status_code=500, detail={
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "Failed to process deposit"
-            }
+            "error": {"code": "INTERNAL_ERROR", "message": "Failed to process deposit"}
         })
 
 
@@ -143,51 +106,25 @@ def withdraw(request: TransactionRequest, session_id: str = Cookie(None)):
     """Withdraw money from account."""
     try:
         user_id = get_current_user(session_id)
-        
-        # Convert amount string to Decimal
-        try:
-            amount = Decimal(request.amount)
-        except Exception:
-            raise HTTPException(status_code=400, detail={
-                "error": {
-                    "code": "INVALID_AMOUNT",
-                    "message": "Invalid amount format"
-                }
-            })
-        
+        amount = Decimal(request.amount)
         balance = atm_service.withdraw(user_id, amount)
-        
         return TransactionResponse(balance=str(balance))
-        
     except HTTPException:
         raise
-    except ATMError as e:
-        error_msg = str(e)
+    except ATMError as exc:
+        error_msg = str(exc)
         if "Insufficient funds" in error_msg:
             raise HTTPException(status_code=400, detail={
-                "error": {
-                    "code": "INSUFFICIENT_FUNDS",
-                    "message": "Insufficient funds"
-                }
+                "error": {"code": "INSUFFICIENT_FUNDS", "message": "Insufficient funds"}
             })
-        else:
-            raise HTTPException(status_code=400, detail={
-                "error": {
-                    "code": "INVALID_AMOUNT",
-                    "message": error_msg
-                }
-            })
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail={
-            "error": {
-                "code": "USER_NOT_FOUND",
-                "message": str(e)
-            }
+        raise HTTPException(status_code=400, detail={
+            "error": {"code": "INVALID_AMOUNT", "message": error_msg}
         })
-    except (DataCorruptionError, Exception) as e:
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={
+            "error": {"code": "USER_NOT_FOUND", "message": str(exc)}
+        })
+    except (DataCorruptionError, Exception):
         raise HTTPException(status_code=500, detail={
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "Failed to process withdrawal"
-            }
+            "error": {"code": "INTERNAL_ERROR", "message": "Failed to process withdrawal"}
         })

@@ -1,0 +1,43 @@
+const API_BASE = '/api';
+
+async function request(path, { method = 'GET', body, headers = {} } = {}) {
+  const options = {
+    method,
+    credentials: 'include',
+    headers: { ...headers },
+  };
+
+  if (body !== undefined) {
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, options);
+
+  if (!response.ok) {
+    let errorPayload = {};
+    try {
+      errorPayload = await response.json();
+    } catch {
+      errorPayload = { error: { message: 'Request failed' } };
+    }
+
+    const message = errorPayload?.error?.message || errorPayload?.detail || 'Request failed';
+    const error = new Error(message);
+    error.payload = errorPayload;
+    throw error;
+  }
+
+  if (response.status === 204) return null;
+  return response.json();
+}
+
+export const api = {
+  login: (userId, pin) => request('/auth/login', { method: 'POST', body: { user_id: userId, pin } }),
+  logout: () => request('/auth/logout', { method: 'POST' }),
+  session: () => request('/auth/session'),
+  getAccount: () => request('/account'),
+  getTransactions: () => request('/transactions'),
+  deposit: (amount) => request('/account/deposit', { method: 'POST', body: { amount: String(amount) } }),
+  withdraw: (amount) => request('/account/withdraw', { method: 'POST', body: { amount: String(amount) } }),
+};

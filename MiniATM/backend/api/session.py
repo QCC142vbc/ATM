@@ -1,11 +1,33 @@
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class Session:
     user_id: str
     name: str
+
+
+class LoginAttemptTracker:
+    MAX_ATTEMPTS = 3
+
+    def __init__(self):
+        self._failed_attempts: dict[str, int] = {}
+
+    def record_failure(self, user_id: str) -> int:
+        attempts = self._failed_attempts.get(user_id, 0) + 1
+        self._failed_attempts[user_id] = attempts
+        return attempts
+
+    def record_success(self, user_id: str) -> None:
+        self._failed_attempts.pop(user_id, None)
+
+    def remaining_attempts(self, user_id: str) -> int:
+        failed = self._failed_attempts.get(user_id, 0)
+        return max(0, self.MAX_ATTEMPTS - failed)
+
+    def is_locked(self, user_id: str) -> bool:
+        return self._failed_attempts.get(user_id, 0) >= self.MAX_ATTEMPTS
 
 
 class SessionManager:
@@ -32,8 +54,9 @@ class SessionManager:
     def _generate_session_id(self) -> str:
         """Generate a simple session ID."""
         import secrets
+
         return secrets.token_urlsafe(32)
 
 
-# Global session manager instance
 session_manager = SessionManager()
+login_attempt_tracker = LoginAttemptTracker()
